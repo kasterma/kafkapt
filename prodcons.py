@@ -2,6 +2,7 @@ from kafka import KafkaProducer, KafkaConsumer
 from kafka.errors import KafkaError
 import click
 import logging
+import sys
 import yaml
 from logging.config import dictConfig
 
@@ -48,6 +49,8 @@ def consume(topic, count):
     log.info(f"consume from {topic} count {count}")
 
     consumer = KafkaConsumer(topic,
+                             group_id="testgroup",
+                             auto_offset_reset="earliest",
                              bootstrap_servers=['localhost:9092'],
                              value_deserializer=lambda b: b.decode("ascii"))
 
