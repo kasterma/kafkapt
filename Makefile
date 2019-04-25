@@ -29,7 +29,14 @@ venv:
 freeze:
 	venv/bin/pip freeze > requirements.txt
 
+produce:
+	source venv/bin/activate; python prodcons.py produce --topic test --count 3
+
+consume:
+	source venv/bin/activate; python prodcons.py consume --topic test --count 3
+
 # add C-m to end of send-keys to execute; but for now want to do by hand
+# run from outside of a tmux session
 setup:
 	tmux new -s kafkapt -d
 	tmux send-keys "make create-topic"
@@ -38,7 +45,7 @@ setup:
 	tmux new-window -n kafka
 	tmux send-keys -t kafka "make run-kafka"
 	tmux new-window -n produce
-	tmux send-keys -t produce "source venv/bin/activate; python produce.py"
+	tmux send-keys -t produce "make produce"
 	tmux new-window -n consume
-	tmux send-keys -t consume "source venv/bin/activate; python consume.py"
+	tmux send-keys -t consume "make consume"
 	tmux attach -t kafkapt

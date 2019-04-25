@@ -10,9 +10,13 @@ with open("logging.yaml") as f:
     dictConfig(d)
 
 
-@click.command()
+@click.group()
+def cli():
+    pass
+
+@cli.command()
 @click.option("--topic")
-@click.option("--count")
+@click.option("--count", type=int)
 def produce(topic, count):
     log = logging.getLogger("produce")
     log.info(f"produce to {topic} count {count}")
@@ -22,7 +26,7 @@ def produce(topic, count):
                              retries=5)
 
     for idx in range(count):
-        future = producer.send('my-topic', f"message {idx}")
+        future = producer.send(topic, f"message {idx}")
 
         try:
             record_metadata = future.get(timeout=10)
@@ -36,20 +40,31 @@ def produce(topic, count):
     producer.flush()
     producer.close()
 
-@click.command()
+@cli.command()
 @click.option("--topic")
-@click.option("--count")
+@click.option("--count", type=int)
 def consume(topic, count):
     log = logging.getLogger("consume")
     log.info(f"consume from {topic} count {count}")
 
-    consumer = KafkaConsumer(topic, value_deserializer=lambda b: b.decode("ascii"))
+    consumer = KafkaConsumer(topic,
+                             bootstrap_servers=['localhost:9092'],
+                             value_deserializer=lambda b: b.decode("ascii"))
 
-    for msg in consumer:
-        log.info(msg)
-        if msg == count:
-            break
+    while True:
+        records = consumer.poll()
+        if len(records) > 0:
+           log.info(records)
+
+           msgs = [r.value for _, rs in records.items() for r in rs]
+           log.info(msgs)
+
+           if any(m == f"message {count-1}" for m in msgs):
+               break
 
     log.info("done done")
 
     consumer.close()
+
+if __name__ == "__main__":
+    cli()
