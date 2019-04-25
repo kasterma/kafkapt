@@ -1,6 +1,8 @@
 KAFKA_VERSION=2.2.0
 KAFKA_BASE=kafka_2.12-${KAFKA_VERSION}
 KAFKA_FILE=${KAFKA_BASE}.tgz
+TEST_TOPIC="test1"
+PARTITIONS=15
 
 ${KAFKA_FILE}:
 	wget http://apache.proserve.nl/kafka/${KAFKA_VERSION}/${KAFKA_FILE}
@@ -24,7 +26,7 @@ run-kafka:
 
 .PHONY: create-topic
 create-topic:
-	cd ${KAFKA_BASE}; bin/kafka-topics.sh --create --bootstrap-server localhost:9092 --replication-factor 1 --partitions 1 --topic test
+	cd ${KAFKA_BASE}; bin/kafka-topics.sh --create --bootstrap-server localhost:9092 --replication-factor 1 --partitions ${PARTITIONS} --topic ${TEST_TOPIC}
 
 venv:
 	python3.7 -m venv venv
@@ -36,11 +38,11 @@ freeze:
 
 .PHONY: produce
 produce:
-	source venv/bin/activate; python prodcons.py produce --topic test --count 3
+	source venv/bin/activate; python prodcons.py produce --topic ${TEST_TOPIC} --count 3
 
 .PHONY: consume
 consume:
-	source venv/bin/activate; python prodcons.py consume --topic test --count 3
+	source venv/bin/activate; python prodcons.py consume --topic ${TEST_TOPIC} --count 3
 
 # add C-m to end of send-keys to execute; but for now want to do by hand
 # run from outside of a tmux session

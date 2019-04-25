@@ -22,7 +22,7 @@ def produce(topic, count):
     log = logging.getLogger("produce")
     log.info(f"produce to {topic} count {count}")
 
-    producer = KafkaProducer(bootstrap_servers=['localhost:9092'],
+    producer = KafkaProducer(bootstrap_servers=['kafka:9092'],
                              value_serializer=lambda m: m.encode("ascii"),
                              retries=5)
 
@@ -51,7 +51,7 @@ def consume(topic, count):
     consumer = KafkaConsumer(topic,
                              group_id="testgroup",
                              auto_offset_reset="earliest",
-                             bootstrap_servers=['localhost:9092'],
+                             bootstrap_servers=['kafka:9092'],
                              value_deserializer=lambda b: b.decode("ascii"))
 
     while True:
